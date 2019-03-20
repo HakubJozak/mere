@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require 'http'
+require 'json'
+require 'pry'
+require 'ostruct'
+require 'active_support/core_ext/string'
+require 'optparse'
+
+require_relative '../lib/gitlab'
+require_relative '../lib/project'
+require_relative '../lib/merge_request'
+require_relative '../core_ext/string'
+
+
+
+class User < OpenStruct
+end
+
+
+def list
+  Gitlab.new do |g|
+    g.merge_requests
+  end
+end
+
+def browse
+  
+end
+
+
+
+case command = ARGV.first
+when /b(rowse)?/
+  browse
+else # /l(ist)?/
+  list
+end
+
+
+
