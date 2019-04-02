@@ -4,10 +4,12 @@ require 'http'
 require 'json'
 require 'pry'
 require 'ostruct'
-require 'active_support/core_ext/string'
 require 'optparse'
+require 'active_support/core_ext/string'
+
 
 require_relative '../lib/gitlab'
+require_relative '../lib/formatter'
 require_relative '../lib/project'
 require_relative '../lib/merge_request'
 require_relative '../core_ext/string'
@@ -20,22 +22,29 @@ end
 
 def list
   Gitlab.new do |g|
-    g.merge_requests
+    reqs = g.merge_requests
+    formatter.print_mrs(reqs)
   end
 end
 
-def browse
-  
+def browse(argv)
+  mr_id = argv.shift.to_i
+end
+
+def formatter
+  @formatter ||= Formatter.new(colors: use_colors?)
+end
+
+def use_colors?
+  ARGV.find { |s| s == '--no-colors' }.nil?
 end
 
 
+$use_colors = use_colors?
 
 case command = ARGV.first
 when /b(rowse)?/
-  browse
+  browse(ARGV)
 else # /l(ist)?/
   list
 end
-
-
-

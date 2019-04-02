@@ -28,16 +28,6 @@ class Gitlab
     reqs = JSON.parse(r.to_s).map do |json|
       MergeRequest.new(json)
     end
-
-    st = reqs.map(&:title).map(&:size).max
-    sb = reqs.map(&:branch).map(&:size).max
-
-    reqs.each do |mr|
-      date = mr.created_at.to_date.to_s
-
-      puts "%8s %3s %#{sb + 1}s - %#{st + 1}s" % [ date.yellow, mr.iid, mr.branch.ljust(sb).red, mr.title.ljust(st) ]
-    end
-
   end
 
 end

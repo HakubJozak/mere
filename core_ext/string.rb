@@ -30,7 +30,11 @@ class String
 
   private
     def colorize(color_code)
-      "\e[#{color_code}m#{self}\e[0m"
+      if $use_colors
+        "\e[#{color_code}m#{self}\e[0m"
+      else
+        self
+      end
     end
 
 end
