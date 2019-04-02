@@ -5,6 +5,7 @@ require 'json'
 require 'pry'
 require 'ostruct'
 require 'optparse'
+require 'open3'
 require 'active_support/core_ext/string'
 
 
@@ -15,6 +16,8 @@ require_relative '../lib/merge_request'
 require_relative '../core_ext/string'
 
 
+# TODO: cache the MRs
+
 
 class User < OpenStruct
 end
@@ -23,28 +26,47 @@ end
 def list
   Gitlab.new do |g|
     reqs = g.merge_requests
-    formatter.print_mrs(reqs)
+    formatter  = Formatter.new
+    puts formatter.print_mrs(reqs)
   end
 end
 
-def browse(argv)
-  mr_id = argv.shift.to_i
+def dmenu_pick_mr
+  out = nil
+
+  Gitlab.new do |g|
+    reqs = g.merge_requests
+    list = formatter.print_mrs(reqs)
+    out, status = Open3.capture2("dmenu -i", stdin_data: list)
+  end
+
+  out
 end
 
 def formatter
-  @formatter ||= Formatter.new(colors: use_colors?)
+  formatter  = Formatter.new(colors: $use_colors)  
 end
+
+def browse_url(url)
+  fork { system "browse #{url}" }
+end
+
 
 def use_colors?
   ARGV.find { |s| s == '--no-colors' }.nil?
 end
 
-
 $use_colors = use_colors?
 
 case command = ARGV.first
 when /b(rowse)?/
-  browse(ARGV)
+  $use_colors = false
+  browse_url dmenu_pick_mr.split.last
+when /checkout|co/
+  $use_colors = false
+  branch  = dmenu_pick_mr.split[2]
+  system "git checkout #{branch}"
 else # /l(ist)?/
+  $use_colors = true
   list
 end

@@ -6,8 +6,9 @@ class Gitlab
     @http = HTTP
               .persistent("https://gitlab.com")
               .headers('Private-Token' => ENV['GITLAB_TOKEN'])
-    yield(self)
+    result = yield(self)
     @http.close
+    result
   end
 
   def projects
